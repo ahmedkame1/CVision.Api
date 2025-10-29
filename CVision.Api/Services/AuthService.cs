@@ -38,37 +38,41 @@ namespace CVision.Api.Services
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
-            _logger.LogInformation($"Login attempt for email: {loginDto.Email}");
+            _logger.LogInformation($" LOGIN ATTEMPT - Email: {loginDto.Email}");
 
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null)
             {
-                _logger.LogWarning($"Login failed - User not found: {loginDto.Email}");
+                _logger.LogWarning($" LOGIN FAILED - User not found: {loginDto.Email}");
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
-            _logger.LogInformation($"User found: {user.Email}, EmailConfirmed: {user.EmailConfirmed}");
+            _logger.LogInformation($" USER FOUND - ID: {user.Id}, Email: {user.Email}, EmailConfirmed: {user.EmailConfirmed}, IsDeleted: {user.IsDeleted}");
 
             // Check email confirmation
             if (!user.EmailConfirmed)
             {
-                _logger.LogWarning($"Login failed - Email not confirmed: {user.Email}");
+                _logger.LogWarning($" LOGIN FAILED - Email not confirmed: {user.Email}");
                 throw new UnauthorizedAccessException("Please confirm your email address before logging in");
             }
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
-            if (!result.Succeeded)
+            // استخدام CheckPassword مباشرة
+            var passwordValid = await _userManager.CheckPasswordAsync(user, loginDto.Password);
+            if (!passwordValid)
             {
-                _logger.LogWarning($"Login failed - Invalid password for: {loginDto.Email}");
+                _logger.LogWarning($" LOGIN FAILED - Invalid password for: {loginDto.Email}");
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
             if (user.IsDeleted)
             {
-                _logger.LogWarning($"Login failed - Account deactivated: {loginDto.Email}");
+                _logger.LogWarning($" LOGIN FAILED - Account deactivated: {loginDto.Email}");
                 throw new UnauthorizedAccessException("Account is deactivated");
             }
 
+            _logger.LogInformation($" LOGIN SUCCESSFUL - Generating token for: {user.Email}");
+
+            // توليد التوكن مباشرة
             var token = await _tokenService.GenerateToken(user);
             var roles = await _userManager.GetRolesAsync(user);
 
@@ -89,8 +93,6 @@ namespace CVision.Api.Services
             }
 
             var userType = roles.Contains("HR") ? UserType.HR : UserType.User;
-
-            _logger.LogInformation($"Login successful for: {user.Email}");
 
             return new AuthResponseDto
             {
@@ -189,7 +191,7 @@ namespace CVision.Api.Services
             // Send confirmation email
             try
             {
-                var baseUrl = _configuration["AppSettings:BaseUrl"] ?? "https://localhost:7009";
+                var baseUrl = _configuration["AppSettings:BaseUrl"] ?? "https://localhost:7031";
                 var confirmationLink = $"{baseUrl}/api/auth/confirm-email?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(emailToken)}";
 
                 _logger.LogInformation($"Sending confirmation email to: {user.Email}");

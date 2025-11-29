@@ -11,8 +11,8 @@ namespace CVision.Api.Models
         public DateTime? ModifiedAt { get; set; }
         public bool IsDeleted { get; set; } = false;
 
-        // إضافة خصائص تأكيد البريد
-        public bool EmailConfirmed { get; set; }
+        // إضافة new keyword لحل مشكلة الإخفاء
+        public new bool EmailConfirmed { get; set; }
         public string? EmailConfirmationToken { get; set; }
         public DateTime? EmailConfirmationTokenExpiry { get; set; }
 

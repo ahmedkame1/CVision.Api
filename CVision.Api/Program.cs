@@ -30,8 +30,11 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.User.RequireUniqueEmail = true;
 
-    // ??????? ????? ??????
+    // ??????? ????? ?????? ??????????
     options.SignIn.RequireConfirmedEmail = true;
+
+    // ??????? ????? ??????
+    options.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
 })
 .AddEntityFrameworkStores<CVisionDbContext>()
 .AddDefaultTokenProviders();
@@ -46,6 +49,7 @@ var emailSettings = new EmailSettings();
 builder.Configuration.GetSection("EmailSettings").Bind(emailSettings);
 builder.Services.AddSingleton(emailSettings);
 
+// ??????? ????????
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -65,49 +69,89 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Register Services
+// ????? ???????
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICVService, CVService>();
+builder.Services.AddScoped<IPdfService, PdfService>();
+
+// ????? CORS ?????? ???????? ?? ???????? ????????
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 // Add Scalar
 builder.Services.AddOpenApi();
+
+// ????? ??????? (Logging)
+builder.Services.AddLogging(loggingBuilder =>
+{
+    loggingBuilder.AddConsole();
+    loggingBuilder.AddDebug();
+});
 
 var app = builder.Build();
 
 // Initialize Roles and Admin User
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-
-    // Create Roles
-    var roles = new[] { "Admin", "HR", "User" };
-    foreach (var role in roles)
+    var services = scope.ServiceProvider;
+    try
     {
-        if (!await roleManager.RoleExistsAsync(role))
-            await roleManager.CreateAsync(new ApplicationRole { Name = role });
-    }
+        var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
-    // Create Admin User
-    var adminEmail = "admin@cvvision.com";
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-    if (adminUser == null)
-    {
-        var admin = new ApplicationUser
+        // Create Roles
+        var roles = new[] { "Admin", "HR", "User" };
+        foreach (var role in roles)
         {
-            FullName = "System Administrator",
-            UserName = adminEmail,
-            Email = adminEmail,
-            CreatedAt = DateTime.Now,
-            EmailConfirmed = true // ????? ?????? ???????? ??????
-        };
-
-        var result = await userManager.CreateAsync(admin, "Admin123!");
-        if (result.Succeeded)
-        {
-            await userManager.AddToRoleAsync(admin, "Admin");
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new ApplicationRole { Name = role });
+            }
         }
+
+        // Create Admin User
+        var adminEmail = "admin@cvvision.com";
+        var adminUser = await userManager.FindByEmailAsync(adminEmail);
+        if (adminUser == null)
+        {
+            var admin = new ApplicationUser
+            {
+                FullName = "System Administrator",
+                UserName = adminEmail,
+                Email = adminEmail,
+                CreatedAt = DateTime.Now,
+                EmailConfirmed = true // ????? ?????? ?????????? ???????? ??????
+            };
+
+            var result = await userManager.CreateAsync(admin, "Admin123!");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(admin, "Admin");
+                Console.WriteLine("Admin user created successfully");
+            }
+            else
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                Console.WriteLine($"Failed to create admin user: {errors}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Admin user already exists");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"An error occurred while seeding the database: {ex.Message}");
     }
 }
 
@@ -116,6 +160,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+
+    // ????? CORS ?? ???? ???????
+    app.UseCors("AllowAll");
 }
 
 app.UseHttpsRedirection();

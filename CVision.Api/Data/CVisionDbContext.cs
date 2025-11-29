@@ -1,4 +1,5 @@
-﻿using CVision.Api.Models;
+﻿// Data/CVisionDbContext.cs
+using CVision.Api.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,7 @@ namespace CVision.Api.Data
         {
         }
 
+        // الجداول الحالية
         public DbSet<Hr> Hrs { get; set; }
         public DbSet<CV> CVs { get; set; }
         public DbSet<CvAttachment> CvAttachments { get; set; }
@@ -23,12 +25,19 @@ namespace CVision.Api.Data
         public DbSet<Goal> Goals { get; set; }
         public DbSet<UserGoal> UserGoals { get; set; }
 
+        // 🔥 إضافة الجداول الجديدة
+        public DbSet<PersonalInfo> PersonalInfos { get; set; }
+        public DbSet<Experience> Experiences { get; set; }
+        public DbSet<Education> Educations { get; set; }
+        public DbSet<Skill> Skills { get; set; }
+        public DbSet<Project> Projects { get; set; }
+        public DbSet<Certification> Certifications { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // علاقات Identity موروثة تلقائياً
-
+            // العلاقات الحالية - تبقى كما هي
             // HR Relationships
             modelBuilder.Entity<Hr>()
                 .HasIndex(h => h.UserId)
@@ -88,7 +97,7 @@ namespace CVision.Api.Data
                 .HasForeignKey(a => a.JobId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // CV Relationships
+            // CV Relationships الحالية
             modelBuilder.Entity<CV>()
                 .HasMany(c => c.Attachments)
                 .WithOne(ca => ca.CV)
@@ -98,7 +107,7 @@ namespace CVision.Api.Data
             // Application Relationships
             modelBuilder.Entity<Application>()
                 .HasOne(a => a.CV)
-                .WithMany()
+                .WithMany(c => c.Applications)
                 .HasForeignKey(a => a.CvId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -115,6 +124,70 @@ namespace CVision.Api.Data
                 .WithOne(ug => ug.Goal)
                 .HasForeignKey(ug => ug.GoalId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // 🔥 إضافة العلاقات الجديدة للـ CV
+
+            // علاقة CV مع PersonalInfo (One-to-One)
+            modelBuilder.Entity<CV>()
+                .HasOne(c => c.PersonalInfo)
+                .WithOne(pi => pi.CV)
+                .HasForeignKey<PersonalInfo>(pi => pi.CvId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // علاقة CV مع Experiences (One-to-Many)
+            modelBuilder.Entity<CV>()
+                .HasMany(c => c.Experiences)
+                .WithOne(e => e.CV)
+                .HasForeignKey(e => e.CvId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // علاقة CV مع Educations (One-to-Many)
+            modelBuilder.Entity<CV>()
+                .HasMany(c => c.Educations)
+                .WithOne(e => e.CV)
+                .HasForeignKey(e => e.CvId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // علاقة CV مع Skills (One-to-Many)
+            modelBuilder.Entity<CV>()
+                .HasMany(c => c.Skills)
+                .WithOne(s => s.CV)
+                .HasForeignKey(s => s.CvId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // علاقة CV مع Projects (One-to-Many)
+            modelBuilder.Entity<CV>()
+                .HasMany(c => c.Projects)
+                .WithOne(p => p.CV)
+                .HasForeignKey(p => p.CvId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // علاقة CV مع Certifications (One-to-Many)
+            modelBuilder.Entity<CV>()
+                .HasMany(c => c.Certifications)
+                .WithOne(c => c.CV)
+                .HasForeignKey(c => c.CvId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 🔥 إضافة Indexes للأداء
+            modelBuilder.Entity<PersonalInfo>()
+                .HasIndex(pi => pi.CvId)
+                .IsUnique();
+
+            modelBuilder.Entity<Experience>()
+                .HasIndex(e => e.CvId);
+
+            modelBuilder.Entity<Education>()
+                .HasIndex(e => e.CvId);
+
+            modelBuilder.Entity<Skill>()
+                .HasIndex(s => s.CvId);
+
+            modelBuilder.Entity<Project>()
+                .HasIndex(p => p.CvId);
+
+            modelBuilder.Entity<Certification>()
+                .HasIndex(c => c.CvId);
         }
     }
 }

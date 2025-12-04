@@ -75,6 +75,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICVService, CVService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
+builder.Services.AddScoped<IPasswordService, PasswordService>();
 
 // ????? CORS ?????? ???????? ?? ???????? ????????
 builder.Services.AddCors(options =>

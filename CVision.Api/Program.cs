@@ -126,7 +126,8 @@ using (var scope = app.Services.CreateScope())
         {
             var admin = new ApplicationUser
             {
-                FullName = "System Administrator",
+                FirstName = "System ",
+                LastName = "Administrator",
                 UserName = adminEmail,
                 Email = adminEmail,
                 CreatedAt = DateTime.Now,

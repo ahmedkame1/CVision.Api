@@ -178,13 +178,14 @@ namespace CVision.Api.Services
                 var personalInfo = new PersonalInfo
                 {
                     CvId = cvId,
-                    FullName = dto.PersonalInfo.FullName,
+                    FirstName = dto.PersonalInfo.FirstName,
+                    LastName = dto.PersonalInfo.LastName,
                     Email = dto.PersonalInfo.Email,
                     Phone = dto.PersonalInfo.Phone,
-                    Location = dto.PersonalInfo.Location, // تغيير من Address إلى Location
+                    Location = dto.PersonalInfo.Location,
                     JobTitle = dto.PersonalInfo.JobTitle,
-                    LinkedIn = dto.PersonalInfo.LinkedIn, // تغيير من LinkedInUrl إلى LinkedIn
-                    GitHub = dto.PersonalInfo.GitHub, // تغيير من GitHubUrl إلى GitHub
+                    LinkedIn = dto.PersonalInfo.LinkedIn,
+                    GitHub = dto.PersonalInfo.GitHub,
                     Website = dto.PersonalInfo.Website
                 };
                 _context.PersonalInfos.Add(personalInfo);

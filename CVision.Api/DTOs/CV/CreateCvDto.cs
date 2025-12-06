@@ -1,4 +1,7 @@
 ﻿// DTOs/CV/CreateCvDto.cs
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace CVision.Api.DTOs.CV
 {
     public class CreateCvDto
@@ -16,15 +19,40 @@ namespace CVision.Api.DTOs.CV
         public List<CertificationDto> Certifications { get; set; } = new();
     }
 
+    // DTOs/CV/CreateCvDto.cs
     public class PersonalInfoDto
     {
-        public string FullName { get; set; } = string.Empty;
+        [Required]
+        [StringLength(50, MinimumLength = 2)]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(50, MinimumLength = 2)]
+        public string LastName { get; set; } = string.Empty;
+
+        [NotMapped]
+        public string FullName => $"{FirstName} {LastName}".Trim();
+
+        [MaxLength(100)]
         public string JobTitle { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
         public string Email { get; set; } = string.Empty;
+
+        [MaxLength(20)]
         public string Phone { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty; // استخدام Location بدل Address
-        public string? LinkedIn { get; set; } // استخدام LinkedIn بدل LinkedInUrl
-        public string? GitHub { get; set; } // استخدام GitHub بدل GitHubUrl
+
+        [MaxLength(200)]
+        public string Location { get; set; } = string.Empty;
+
+        [MaxLength(200)]
+        public string? LinkedIn { get; set; }
+
+        [MaxLength(200)]
+        public string? GitHub { get; set; }
+
+        [MaxLength(200)]
         public string? Website { get; set; }
     }
 

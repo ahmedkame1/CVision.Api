@@ -86,8 +86,7 @@ namespace CVision.Api.Services
                     {
                         CompanyName = hrProfile.CompanyName,
                         CompanyAddress = hrProfile.CompanyAddress,
-                        Website = hrProfile.Website,
-                        ContactPerson = hrProfile.ContactPerson
+                        
                     };
                 }
             }
@@ -100,13 +99,15 @@ namespace CVision.Api.Services
                 Expiration = DateTime.Now.AddMinutes(60),
                 UserId = user.Id.ToString(),
                 Email = user.Email!,
-                FullName = user.FullName,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Roles = roles.ToList(),
                 UserType = userType,
                 HrInfo = hrInfo
             };
         }
 
+        // في RegisterAsync method
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
         {
             _logger.LogInformation($"Registration attempt for email: {registerDto.Email}");
@@ -119,13 +120,14 @@ namespace CVision.Api.Services
                 if (string.IsNullOrEmpty(registerDto.CompanyName))
                     throw new ArgumentException("Company name is required for HR registration");
 
-                if (string.IsNullOrEmpty(registerDto.ContactPerson))
-                    throw new ArgumentException("Contact person is required for HR registration");
+                
             }
 
+            // إنشاء المستخدم مع FirstName و LastName
             var user = new ApplicationUser
             {
-                FullName = registerDto.FullName,
+                FirstName = registerDto.FirstName,
+                LastName = registerDto.LastName,
                 UserName = registerDto.Email,
                 Email = registerDto.Email,
                 CreatedAt = DateTime.Now,
@@ -178,8 +180,7 @@ namespace CVision.Api.Services
                     UserId = user.Id,
                     CompanyName = registerDto.CompanyName!,
                     CompanyAddress = registerDto.CompanyAddress ?? "",
-                    Website = registerDto.Website ?? "",
-                    ContactPerson = registerDto.ContactPerson!
+                   
                 };
 
                 _context.Hrs.Add(hrProfile);
@@ -216,8 +217,7 @@ namespace CVision.Api.Services
                 {
                     CompanyName = registerDto.CompanyName!,
                     CompanyAddress = registerDto.CompanyAddress ?? "",
-                    Website = registerDto.Website ?? "",
-                    ContactPerson = registerDto.ContactPerson!
+                    
                 };
             }
 
@@ -229,7 +229,8 @@ namespace CVision.Api.Services
                 Expiration = DateTime.Now.AddMinutes(60),
                 UserId = user.Id.ToString(),
                 Email = user.Email!,
-                FullName = user.FullName,
+                FirstName = user.FirstName, 
+                LastName = user.LastName,
                 Roles = roles.ToList(),
                 UserType = registerDto.UserType,
                 HrInfo = hrInfo
@@ -338,8 +339,7 @@ namespace CVision.Api.Services
                         UserId = user.Id,
                         CompanyName = "Default Company",
                         CompanyAddress = "",
-                        Website = "",
-                        ContactPerson = user.FullName
+                        
                     };
 
                     _context.Hrs.Add(hrProfile);

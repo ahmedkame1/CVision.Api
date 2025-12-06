@@ -23,12 +23,14 @@ namespace CVision.Api.Services
         public async Task<string> GenerateToken(ApplicationUser user)
         {
             var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email!),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("fullName", user.FullName)
-            };
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+        new Claim(JwtRegisteredClaimNames.Email, user.Email!),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim("firstName", user.FirstName),
+        new Claim("lastName", user.LastName),
+        new Claim("fullName", user.FullName) // للحفاظ على التوافق
+    };
 
             var roles = await _userManager.GetRolesAsync(user);
             foreach (var role in roles)

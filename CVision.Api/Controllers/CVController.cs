@@ -338,7 +338,8 @@ namespace CVision.Api.Controllers
                 var personalInfo = new PersonalInfo
                 {
                     CvId = cvId,
-                    FullName = dto.PersonalInfo.FullName,
+                    FirstName = dto.PersonalInfo.FirstName,
+                    LastName = dto.PersonalInfo.LastName,
                     JobTitle = dto.PersonalInfo.JobTitle,
                     Email = dto.PersonalInfo.Email,
                     Phone = dto.PersonalInfo.Phone,
